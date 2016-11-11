@@ -15,7 +15,7 @@ Adicione ao seu projeto:
 ```
 ```gradle
 	dependencies {
-	        compile 'com.github.tiagohm:BlueDroid:0.1.1'
+	        compile 'com.github.tiagohm:BlueDroid:0.1.2'
 	}
 ```
 
@@ -68,7 +68,7 @@ bt.doDiscovery();
 
 Exibir os dispositivos encontrados numa lista e conectar ao clicar em um item:
 ```java
-((ListView)findViewById(R.id.device_list)).setAdapter(bt);
+((ListView)findViewById(R.id.device_list)).setAdapter(bt.getAdapter());
 ((ListView)findViewById(R.id.device_list)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
   @Override
   public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
