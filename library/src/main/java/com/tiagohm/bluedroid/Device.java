@@ -22,31 +22,37 @@ public class Device {
     private final String mAddress;
     private final boolean isPaired;
 
-    public Device( String name, String address, boolean paired ) {
+    public Device( String name, String address, boolean paired )
+    {
         this.mName = name;
         this.mAddress = address;
         this.isPaired = paired;
     }
 
-    public String getName() {
+    public String getName()
+    {
         return mName;
     }
 
-    public String getAddress() {
+    public String getAddress()
+    {
         return mAddress;
     }
 
-    public boolean isPaired() {
+    public boolean isPaired()
+    {
         return isPaired;
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return mAddress != null ? mAddress.hashCode() : super.hashCode();
     }
 
     @Override
-    public boolean equals( Object o ) {
-        return o instanceof Device && getAddress() == ( (Device)o ).getAddress();
+    public boolean equals( Object o )
+    {
+        return o instanceof Device && getAddress() == ((Device)o).getAddress();
     }
 }

@@ -27,7 +27,8 @@ public enum LineBreakType {
 
     public final int value;
 
-    LineBreakType( int value ) {
+    LineBreakType( int value )
+    {
         this.value = value;
     }
 }
