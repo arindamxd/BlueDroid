@@ -60,7 +60,14 @@ public class BlueDroid
             Log.d(TAG, "BlueDroid.mReceiver.onReceive()");
             String action = intent.getAction();
 
-            if(BluetoothDevice.ACTION_FOUND.equals(action))
+            if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action))
+            {
+                mCurrentDevice = null;
+                mDevices.clear();
+                mAdapter.notifyDataSetChanged();
+                fireOnDiscoveryStarted();
+            }
+            else if(BluetoothDevice.ACTION_FOUND.equals(action))
             {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 Device newDevice = new Device(device.getName(), device.getAddress(), false);
@@ -485,12 +492,6 @@ public class BlueDroid
             return;
         }
 
-        mCurrentDevice = null;
-        mDevices.clear();
-        mAdapter.notifyDataSetChanged();
-
-        fireOnDiscoveryStarted();
-
         if(isDiscovering())
         {
             mContext.unregisterReceiver(mReceiver);
@@ -498,6 +499,7 @@ public class BlueDroid
         }
 
         mContext.registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+        mContext.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED));
         mContext.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 
         startDiscovery();
