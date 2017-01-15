@@ -52,12 +52,6 @@
    android:layout_width="0dp"
    android:layout_height="match_parent"
    android:layout_weight="0.5"
-   android:text="DISPOSITIVOS"/>
-
-  <TextView
-   android:layout_width="0dp"
-   android:layout_height="match_parent"
-   android:layout_weight="0.5"
    android:text="TEXTO RECEBIDO"/>
  </LinearLayout>
 
@@ -65,12 +59,6 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:orientation="horizontal">
-
-  <ListView
-   android:id="@+id/device_list"
-   android:layout_width="0dp"
-   android:layout_height="match_parent"
-   android:layout_weight="0.5"/>
 
   <ScrollView
    android:layout_width="0dp"

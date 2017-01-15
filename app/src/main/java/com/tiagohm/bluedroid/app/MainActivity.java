@@ -6,12 +6,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.tiagohm.bluedroid.BlueDiscoveryDialog;
 import com.tiagohm.bluedroid.BlueDroid;
 import com.tiagohm.bluedroid.ConnectionDevice;
 import com.tiagohm.bluedroid.ConnectionSecure;
@@ -114,26 +113,12 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        ((ListView)findViewById(R.id.device_list)).setAdapter(bt.getAdapter());
-        ((ListView)findViewById(R.id.device_list)).setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-                if(!bt.isConnected())
-                {
-                    Device device = (Device)view.getTag();
-                    bt.connect(device);
-                }
-            }
-        });
-
         findViewById(R.id.btnProcurar).setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                bt.doDiscovery(MainActivity.this);
+                new BlueDiscoveryDialog(MainActivity.this, bt).show();
             }
         });
 
