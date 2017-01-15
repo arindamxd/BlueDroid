@@ -33,6 +33,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -70,7 +71,8 @@ public class BlueDroid
             else if(BluetoothDevice.ACTION_FOUND.equals(action))
             {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Device newDevice = new Device(device.getName(), device.getAddress(), false);
+                final int deviceClass = device.getBluetoothClass().getDeviceClass();
+                Device newDevice = new Device(device.getName(), device.getAddress(), false, deviceClass);
                 mDevices.add(newDevice);
                 mAdapter.notifyDataSetChanged();
                 fireOnDeviceFound(newDevice);
@@ -669,6 +671,7 @@ public class BlueDroid
             Device device = getDevices().get(position);
 
             v.setTag(device);
+            ((ImageView)v.findViewById(R.id.bt_device_icon)).setImageResource(device.getDeviceClassIcon());
             ((TextView)v.findViewById(R.id.bt_device_name)).setText(device.getName());
             ((TextView)v.findViewById(R.id.bt_device_address)).setText(device.getAddress());
 
