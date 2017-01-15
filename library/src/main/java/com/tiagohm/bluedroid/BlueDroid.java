@@ -530,19 +530,22 @@ public class BlueDroid
         for(DiscoveryListener listener : discoveryListener) listener.onDiscoveryFailed();
     }
 
-    public void addDiscoveryListener(DiscoveryListener discoveryListener)
+    public void addDiscoveryListener(DiscoveryListener listener)
     {
-        this.discoveryListener.add(discoveryListener);
+        if(!discoveryListener.contains(listener))
+        {
+            discoveryListener.add(listener);
+        }
     }
 
-    public void removeDiscoveryListener(DiscoveryListener discoveryListener)
+    public void removeDiscoveryListener(DiscoveryListener listener)
     {
-        this.discoveryListener.remove(discoveryListener);
+        discoveryListener.remove(listener);
     }
 
     public void clearDiscoveryListener()
     {
-        this.discoveryListener.clear();
+        discoveryListener.clear();
     }
 
     protected void fireOnDataReceived(byte data)
@@ -550,19 +553,22 @@ public class BlueDroid
         for(DataReceivedListener listener : dataReceivedListener) listener.onDataReceived(data);
     }
 
-    public void addDataReceivedListener(DataReceivedListener dataReceivedListener)
+    public void addDataReceivedListener(DataReceivedListener listener)
     {
-        this.dataReceivedListener.add(dataReceivedListener);
+        if(!dataReceivedListener.contains(listener))
+        {
+            dataReceivedListener.add(listener);
+        }
     }
 
-    public void removeDataReceivedListener(DataReceivedListener dataReceivedListener)
+    public void removeDataReceivedListener(DataReceivedListener listener)
     {
-        this.dataReceivedListener.remove(dataReceivedListener);
+        dataReceivedListener.remove(listener);
     }
 
     public void clearDataReceivedListener()
     {
-        this.dataReceivedListener.clear();
+        dataReceivedListener.clear();
     }
 
     protected void fireOnDeviceConnecting()
@@ -585,19 +591,22 @@ public class BlueDroid
         for(ConnectionListener listener : connectionListener) listener.onDeviceConnectionFailed();
     }
 
-    public void addConnectionListener(ConnectionListener connectionListener)
+    public void addConnectionListener(ConnectionListener listener)
     {
-        this.connectionListener.add(connectionListener);
+        if(!connectionListener.contains(listener))
+        {
+            connectionListener.add(listener);
+        }
     }
 
-    public void removeConnectionListener(ConnectionListener connectionListener)
+    public void removeConnectionListener(ConnectionListener listener)
     {
-        this.connectionListener.remove(connectionListener);
+        connectionListener.remove(listener);
     }
 
     public void clearConnectionListener()
     {
-        this.connectionListener.clear();
+        connectionListener.clear();
     }
 
     public interface DiscoveryListener
