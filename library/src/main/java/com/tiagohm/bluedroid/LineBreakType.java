@@ -16,18 +16,19 @@
 
 package com.tiagohm.bluedroid;
 
-public enum LineBreakType {
-    NONE( 0 ),
-    WINDOWS( 1 ),
-    UNIX( 2 ),
-    MAC( 3 ),
-    CRLF( 1 ),
-    LF( 2 ),
-    CR( 3 );
+public enum LineBreakType
+{
+    NONE(0),
+    WINDOWS(1),
+    UNIX(2),
+    MAC(3),
+    CRLF(1),
+    LF(2),
+    CR(3);
 
     public final int value;
 
-    LineBreakType( int value )
+    LineBreakType(int value)
     {
         this.value = value;
     }

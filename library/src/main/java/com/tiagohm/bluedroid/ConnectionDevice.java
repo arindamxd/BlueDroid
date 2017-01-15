@@ -16,7 +16,8 @@
 
 package com.tiagohm.bluedroid;
 
-public enum ConnectionDevice {
+public enum ConnectionDevice
+{
     ANDROID,
     OTHER
 }

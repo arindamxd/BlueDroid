@@ -16,13 +16,14 @@
 
 package com.tiagohm.bluedroid;
 
-public class Device {
+public class Device
+{
 
     private final String mName;
     private final String mAddress;
     private final boolean isPaired;
 
-    public Device( String name, String address, boolean paired )
+    public Device(String name, String address, boolean paired)
     {
         this.mName = name;
         this.mAddress = address;
@@ -51,7 +52,7 @@ public class Device {
     }
 
     @Override
-    public boolean equals( Object o )
+    public boolean equals(Object o)
     {
         return o instanceof Device && getAddress() == ((Device)o).getAddress();
     }

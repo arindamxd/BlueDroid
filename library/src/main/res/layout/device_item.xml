@@ -6,24 +6,24 @@
               android:orientation="vertical"
               android:padding="5dp">
 
-    <TextView
-        android:id="@id/bt_device_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="1dp"
-        android:paddingTop="3dp"
-        android:text="XYZ"
-        android:textColor="#009688"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
+ <TextView
+  android:id="@id/bt_device_name"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:paddingBottom="1dp"
+  android:paddingTop="3dp"
+  android:text="XYZ"
+  android:textColor="#009688"
+  android:textSize="18sp"
+  android:textStyle="bold"/>
 
-    <TextView
-        android:id="@id/bt_device_address"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="3dp"
-        android:paddingTop="1dp"
-        android:text="00:00:00:00:00:00"
-        android:textColor="#a0a0a0"
-        android:textSize="14sp"/>
+ <TextView
+  android:id="@id/bt_device_address"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:paddingBottom="3dp"
+  android:paddingTop="1dp"
+  android:text="00:00:00:00:00:00"
+  android:textColor="#a0a0a0"
+  android:textSize="14sp"/>
 </LinearLayout>
