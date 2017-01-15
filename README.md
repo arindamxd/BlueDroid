@@ -23,6 +23,7 @@ Adicione as permissões:
 ```xml
 <uses-permission android:name="android.permission.BLUETOOTH" />
 <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 ```
 
 Declare BlueDroid:
@@ -63,21 +64,21 @@ Encerrá-lo ao fechar o aplicativo:
 
 Procurar por dispositivos:
 ```java
-bt.doDiscovery();
+bt.doDiscovery(Activity);
+```
+
+Adicionar o tratamento da requisão da permissão:
+```java
+@Override
+public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+{
+   bt.checkDiscoveryPermissionRequest(requestCode, permissions, grantResults);
+}
 ```
 
 Exibir os dispositivos encontrados numa lista e conectar ao clicar em um item:
 ```java
-((ListView)findViewById(R.id.device_list)).setAdapter(bt.getAdapter());
-((ListView)findViewById(R.id.device_list)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
-  @Override
-  public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    if(!bt.isConnected()) {
-      Device device = (Device)view.getTag();
-      bt.connect(device);
-    }
-  }
-} );
+new BlueDiscoveryDialog(Context, bt).show();
 ```
 
 Para desconectar:
@@ -88,12 +89,12 @@ bt.disconnect();
 Para enviar:
 ```java
 String texto = "123456";
-bt.send(texto.getBytes( Charset.forName("US-ASCII")), LineBreakType.UNIX);
+bt.send(texto.getBytes(Charset.forName("US-ASCII")), LineBreakType.UNIX);
 ```
 
 Receber dados:
 ```java
-bt.setDataReceivedListener(new BlueDroid.DataReceivedListener() {
+bt.addDataReceivedListener(new BlueDroid.DataReceivedListener() {
   @Override
   public void onDataReceived(byte data) {
     ...
@@ -102,7 +103,7 @@ bt.setDataReceivedListener(new BlueDroid.DataReceivedListener() {
 ```
 
 ## LICENÇA
-Copyright 2016 tiagohm
+Copyright 2016-2017 tiagohm
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
