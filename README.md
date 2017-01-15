@@ -15,7 +15,7 @@ Adicione ao seu projeto:
 ```
 ```gradle
 	dependencies {
-	        compile 'com.github.tiagohm:BlueDroid:0.1.2'
+	        compile 'com.github.tiagohm:BlueDroid:0.1.3'
 	}
 ```
 
@@ -101,6 +101,10 @@ bt.addDataReceivedListener(new BlueDroid.DataReceivedListener() {
   }
 } );
 ```
+
+## Ícones Utilizados
+
+[Icons8](https://icons8.com/)
 
 ## LICENÇA
 Copyright 2016-2017 tiagohm
