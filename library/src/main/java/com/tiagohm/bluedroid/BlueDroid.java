@@ -16,14 +16,18 @@
 
 package com.tiagohm.bluedroid;
 
+import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +40,7 @@ import java.util.List;
 
 public class BlueDroid
 {
+    public static final int REQUEST_COARSE_LOCATION_PERMISSIONS = 0x00BB;
 
     private static final String TAG = "TAG";
     private final Context mContext;
@@ -438,12 +443,48 @@ public class BlueDroid
         mBtService.write(b);
     }
 
+    public void checkDiscoveryPermissionRequest(int requestCode, String permissions[], int[] grantResults)
+    {
+        switch(requestCode)
+        {
+            case REQUEST_COARSE_LOCATION_PERMISSIONS:
+            {
+                if(grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
+                    doDiscovery(null);
+                }
+                else
+                {
+                    fireOnDiscoveryFailed();
+                }
+
+                return;
+            }
+        }
+    }
+
     /**
      * Executa a descoberta de dispositivos Bluetooth.
      */
-    public void doDiscovery()
+    public void doDiscovery(Activity activity)
     {
         Log.d(TAG, "BlueDroid.doDiscovery()");
+
+        final int hasPermission = ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        if(hasPermission != PackageManager.PERMISSION_GRANTED)
+        {
+            if(activity != null)
+            {
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{
+                                android.Manifest.permission.ACCESS_COARSE_LOCATION },
+                        REQUEST_COARSE_LOCATION_PERMISSIONS);
+            }
+
+            return;
+        }
+
         mCurrentDevice = null;
         mDevices.clear();
         mAdapter.notifyDataSetChanged();
@@ -480,6 +521,11 @@ public class BlueDroid
     protected void fireOnDeviceFound(Device dev)
     {
         for(DiscoveryListener listener : discoveryListener) listener.onDeviceFound(dev);
+    }
+
+    protected void fireOnDiscoveryFailed()
+    {
+        for(DiscoveryListener listener : discoveryListener) listener.onDiscoveryFailed();
     }
 
     public void addDiscoveryListener(DiscoveryListener discoveryListener)
@@ -561,6 +607,8 @@ public class BlueDroid
         void onNoDevicesFound();
 
         void onDeviceFound(Device device);
+
+        void onDiscoveryFailed();
     }
 
     public interface DataReceivedListener

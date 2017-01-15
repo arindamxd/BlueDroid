@@ -3,6 +3,7 @@ package com.tiagohm.bluedroid.app;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -68,6 +69,12 @@ public class MainActivity extends AppCompatActivity
             {
                 Toast.makeText(MainActivity.this, "Encontrado: " + device.getName(), Toast.LENGTH_SHORT).show();
             }
+
+            @Override
+            public void onDiscoveryFailed()
+            {
+                Toast.makeText(MainActivity.this, "A busca falhou", Toast.LENGTH_SHORT).show();
+            }
         });
 
         bt.addConnectionListener(new BlueDroid.ConnectionListener()
@@ -126,7 +133,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                bt.doDiscovery();
+                bt.doDiscovery(MainActivity.this);
             }
         });
 
@@ -177,5 +184,11 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        bt.checkDiscoveryPermissionRequest(requestCode, permissions, grantResults);
     }
 }
