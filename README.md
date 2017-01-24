@@ -102,6 +102,59 @@ bt.addDataReceivedListener(new BlueDroid.DataReceivedListener() {
 } );
 ```
 
+Outros eventos:
+```java
+bt.addDiscoveryListener(new BlueDroid.DiscoveryListener()
+{
+    @Override
+    public void onDiscoveryStarted()
+    {
+    }
+
+    @Override
+    public void onDiscoveryFinished()
+    {
+    }
+
+    @Override
+    public void onNoDevicesFound()
+    {
+    }
+
+    @Override
+    public void onDeviceFound(Device device)
+    {
+    }
+
+    @Override
+    public void onDiscoveryFailed()
+    {
+    }
+});
+
+bt.addConnectionListener(new BlueDroid.ConnectionListener()
+{
+    @Override
+    public void onDeviceConnecting()
+    {
+    }
+
+    @Override
+    public void onDeviceConnected()
+    {
+    }
+
+    @Override
+    public void onDeviceDisconnected()
+    {
+    }
+
+    @Override
+    public void onDeviceConnectionFailed()
+    {
+    }
+});
+```
 ## Ícones Utilizados
 
 [Icons8](https://icons8.com/)
