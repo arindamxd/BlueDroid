@@ -2,6 +2,9 @@
 
 [![](https://jitpack.io/v/tiagohm/BlueDroid.svg)](https://jitpack.io/#tiagohm/BlueDroid)
 
+* API +10
+* Suporte ao Android 6
+
 ## USO
 
 Adicione ao seu projeto:
@@ -30,6 +33,14 @@ Declare BlueDroid:
 ```java
 BlueDroid bt = new BlueDroid(Context, ConnectionDevice, ConnectionSecure);
 ```
+```java
+ConnectionDevice.ANDROID
+```
+![](https://raw.githubusercontent.com/tiagohm/BlueDroid/master/android-to-android.png)
+```java
+ConnectionDevice.OTHER
+```
+![](https://raw.githubusercontent.com/tiagohm/BlueDroid/master/android-to-other.png)
 
 Verificar se Bluetooth está disponível:
 ```java
@@ -80,6 +91,8 @@ Exibir os dispositivos encontrados numa lista e conectar ao clicar em um item:
 ```java
 new BlueDiscoveryDialog(Context, bt).show();
 ```
+
+![](https://raw.githubusercontent.com/tiagohm/BlueDroid/master/1.png)
 
 Para desconectar:
 ```java
