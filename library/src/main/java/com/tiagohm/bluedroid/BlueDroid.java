@@ -39,10 +39,32 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlueDroid
-{
-    public static final int REQUEST_COARSE_LOCATION_PERMISSIONS = 0x00BB;
+public class BlueDroid {
+    public interface DiscoveryListener {
+        void onDiscoveryStarted();
 
+        void onDiscoveryFinished();
+
+        void onNoDevicesFound();
+
+        void onDeviceFound(Device device);
+
+        void onDiscoveryFailed();
+    }
+
+    public interface DataReceivedListener {
+        void onDataReceived(byte data);
+    }
+    public interface ConnectionListener {
+        void onDeviceConnecting();
+
+        void onDeviceConnected();
+
+        void onDeviceDisconnected();
+
+        void onDeviceConnectionFailed();
+    }
+    public static final int REQUEST_COARSE_LOCATION_PERMISSIONS = 0x00BB;
     private static final String TAG = "TAG";
     private final Context mContext;
     private final BlueDroidAdapter mAdapter = new BlueDroidAdapter();
@@ -52,61 +74,47 @@ public class BlueDroid
     private final List<DiscoveryListener> discoveryListener = new ArrayList<>();
     private final List<DataReceivedListener> dataReceivedListener = new ArrayList<>();
     private final List<ConnectionListener> connectionListener = new ArrayList<>();
-
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver()
-    {
+    private BluetoothAdapter mBtAdapter;
+    private BlueService mBtService;
+    private Device mCurrentDevice;
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent intent)
-        {
+        public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "BlueDroid.mReceiver.onReceive()");
             String action = intent.getAction();
 
-            if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action))
-            {
+            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 mCurrentDevice = null;
                 mDevices.clear();
                 mAdapter.notifyDataSetChanged();
                 fireOnDiscoveryStarted();
-            }
-            else if(BluetoothDevice.ACTION_FOUND.equals(action))
-            {
+            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 final int deviceClass = device.getBluetoothClass().getDeviceClass();
                 Device newDevice = new Device(device.getName(), device.getAddress(), false, deviceClass);
                 mDevices.add(newDevice);
                 mAdapter.notifyDataSetChanged();
                 fireOnDeviceFound(newDevice);
-            }
-            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
-            {
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 mContext.unregisterReceiver(mReceiver);
                 fireOnDiscoveryFinished();
-                if(mDevices.size() == 0)
-                {
+                if (mDevices.size() == 0) {
                     fireOnNoDevicesFound();
                 }
             }
         }
     };
-
-    private BluetoothAdapter mBtAdapter;
-    private BlueService mBtService;
-    private Device mCurrentDevice;
     private boolean isServiceRunning = false;
     private boolean isConnecting = false;
     private boolean isConnected = false;
-
-    private final Handler mHandler = new Handler()
-    {
-        public void handleMessage(Message msg)
-        {
+    private final Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
             Log.d(TAG, "BlueDroid.mHandler.handleMessage(" + msg.what + ")");
-            switch(msg.what)
-            {
+            switch (msg.what) {
                 case BlueService.MESSAGE_WRITE:
                     break;
                 case BlueService.MESSAGE_READ:
-                    byte data = (byte)(int)msg.obj;
+                    byte data = (byte) (int) msg.obj;
                     fireOnDataReceived(data);
                     break;
                 case BlueService.MESSAGE_DEVICE_NAME:
@@ -114,22 +122,17 @@ public class BlueDroid
                     isConnected = true;
                     break;
                 case BlueService.MESSAGE_STATE_CHANGE:
-                    if(isConnected && msg.arg1 != BlueService.STATE_CONNECTED)
-                    {
+                    if (isConnected && msg.arg1 != BlueService.STATE_CONNECTED) {
                         isConnected = false;
                         fireOnDeviceDisconnected();
                         mCurrentDevice = null;
                     }
-                    if(!isConnecting && msg.arg1 == BlueService.STATE_CONNECTING)
-                    {
+                    if (!isConnecting && msg.arg1 == BlueService.STATE_CONNECTING) {
                         isConnecting = true;
                         fireOnDeviceConnecting();
-                    }
-                    else if(isConnecting)
-                    {
+                    } else if (isConnecting) {
                         isConnecting = false;
-                        if(msg.arg1 != BlueService.STATE_CONNECTED)
-                        {
+                        if (msg.arg1 != BlueService.STATE_CONNECTED) {
                             fireOnDeviceConnectionFailed();
                             mCurrentDevice = null;
                         }
@@ -142,8 +145,7 @@ public class BlueDroid
     /**
      * Cria uma intância da classe BlueDroid.
      */
-    public BlueDroid(Context context, ConnectionDevice device, ConnectionSecure type)
-    {
+    public BlueDroid(Context context, ConnectionDevice device, ConnectionSecure type) {
         mContext = context;
         mConnectionDevice = device;
         mConnectionSecure = type;
@@ -153,31 +155,25 @@ public class BlueDroid
     /**
      * Obtém o adapter da lista de dispositivos Bluetooth encontrados.
      */
-    public BaseAdapter getAdapter()
-    {
+    public BaseAdapter getAdapter() {
         return mAdapter;
     }
 
     /**
      * Obtém a lista de dispositivos Bluetooth encontrados.
      */
-    public List<Device> getDevices()
-    {
+    public List<Device> getDevices() {
         return mDevices;
     }
 
     /**
      * Verifica se o adaptador Bluetooth está disponível.
      */
-    public boolean isAvailable()
-    {
+    public boolean isAvailable() {
         Log.d(TAG, "BlueDroid.isAvailable()");
-        try
-        {
+        try {
             return mBtAdapter != null;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -186,16 +182,14 @@ public class BlueDroid
     /**
      * Obtém o dispositivo atualmente conectado.
      */
-    public Device getCurrentDevice()
-    {
+    public Device getCurrentDevice() {
         return mCurrentDevice;
     }
 
     /**
      * Verifica se o serviço está disponível.
      */
-    public boolean isServiceAvailable()
-    {
+    public boolean isServiceAvailable() {
         Log.d(TAG, "BlueDroid.isServiceAvailable()");
         return mBtService != null;
     }
@@ -203,8 +197,7 @@ public class BlueDroid
     /**
      * Verifica se o adaptador Bluetooth está ativado.
      */
-    public boolean isEnabled()
-    {
+    public boolean isEnabled() {
         Log.d(TAG, "BlueDroid.isEnabled()");
         Log.d(TAG, mBtAdapter.getAddress());
         return mBtAdapter.getAddress() != null && mBtAdapter.isEnabled();
@@ -213,16 +206,14 @@ public class BlueDroid
     /**
      * Verifica se o serviço está rodando.
      */
-    public boolean isServiceRunning()
-    {
+    public boolean isServiceRunning() {
         return isServiceRunning;
     }
 
     /**
      * Inicia a descoberta de dispositivos Bluetooth.
      */
-    public boolean startDiscovery()
-    {
+    public boolean startDiscovery() {
         Log.d(TAG, "BlueDroid.startDiscovery()");
         return mBtAdapter.startDiscovery();
     }
@@ -230,8 +221,7 @@ public class BlueDroid
     /**
      * Verifica se a descoberta de dispositivos está sendo executada.
      */
-    public boolean isDiscovering()
-    {
+    public boolean isDiscovering() {
         Log.d(TAG, "BlueDroid.isDiscovering()");
         return mBtAdapter.isDiscovering();
     }
@@ -239,8 +229,7 @@ public class BlueDroid
     /**
      * Cancela a descoberta de dispositivos Bluetooth.
      */
-    public boolean cancelDiscovery()
-    {
+    public boolean cancelDiscovery() {
         Log.d(TAG, "BlueDroid.cancelDiscovery()");
         return mBtAdapter.cancelDiscovery();
     }
@@ -248,25 +237,20 @@ public class BlueDroid
     /**
      * Obtém o adaptador Bluetooth.
      */
-    public BluetoothAdapter getBluetoothAdapter()
-    {
+    public BluetoothAdapter getBluetoothAdapter() {
         Log.d(TAG, "BlueDroid.getBluetoothAdapter()");
         return mBtAdapter;
     }
 
-    private void setupService()
-    {
+    private void setupService() {
         Log.d(TAG, "BlueDroid.setupService()");
         mBtService = new BlueService(mHandler);
     }
 
-    private void startService()
-    {
+    private void startService() {
         Log.d(TAG, "BlueDroid.startService()");
-        if(isServiceAvailable())
-        {
-            if(mBtService.getState() == BlueService.STATE_NONE)
-            {
+        if (isServiceAvailable()) {
+            if (mBtService.getState() == BlueService.STATE_NONE) {
                 isServiceRunning = true;
                 mBtService.start(mConnectionDevice == ConnectionDevice.ANDROID,
                         mConnectionSecure == ConnectionSecure.SECURE);
@@ -277,22 +261,17 @@ public class BlueDroid
     /**
      * Encerra a conexão.
      */
-    public void stop()
-    {
+    public void stop() {
         Log.d(TAG, "BlueDroid.stop()");
         mCurrentDevice = null;
-        if(isServiceAvailable())
-        {
+        if (isServiceAvailable()) {
             isServiceRunning = false;
             mBtService.stop();
         }
 
-        new Handler().postDelayed(new Runnable()
-        {
-            public void run()
-            {
-                if(isServiceAvailable())
-                {
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                if (isServiceAvailable()) {
                     isServiceRunning = false;
                     mBtService.stop();
                 }
@@ -303,31 +282,25 @@ public class BlueDroid
     /**
      * Conecta a um dispositivo Bluetooth.
      */
-    public void connect(Device device)
-    {
-        if(device != null)
-        {
+    public void connect(Device device) {
+        if (device != null) {
             mCurrentDevice = device;
             connect(device.getAddress());
         }
     }
 
-    private void connect(String address)
-    {
+    private void connect(String address) {
         Log.d(TAG, "BlueDroid.connect(" + address + ")");
-        if(isConnecting)
-        {
+        if (isConnecting) {
             return;
         }
-        if(!isServiceAvailable())
-        {
+        if (!isServiceAvailable()) {
             setupService();
         }
 
         startService();
 
-        if(BluetoothAdapter.checkBluetoothAddress(address))
-        {
+        if (BluetoothAdapter.checkBluetoothAddress(address)) {
             BluetoothDevice device = mBtAdapter.getRemoteDevice(address);
             mBtService.connect(device);
         }
@@ -336,8 +309,7 @@ public class BlueDroid
     /**
      * Verifica se está conectado a um dispositivo.
      */
-    public boolean isConnected()
-    {
+    public boolean isConnected() {
         Log.d(TAG, "BlueDroid.isConnected()");
         return isConnected && mConnectionDevice != null;
     }
@@ -345,8 +317,7 @@ public class BlueDroid
     /**
      * Verifica se está conectando a um dispositivo.
      */
-    public boolean isConnecting()
-    {
+    public boolean isConnecting() {
         Log.d(TAG, "BlueDroid.isConnecting()");
         return isConnecting;
     }
@@ -354,8 +325,7 @@ public class BlueDroid
     /**
      * Habilia o adaptador Bluetooth.
      */
-    public void enable()
-    {
+    public void enable() {
         Log.d(TAG, "BlueDroid.enable()");
         mBtAdapter.enable();
     }
@@ -363,17 +333,14 @@ public class BlueDroid
     /**
      * Desconecta com o dispositivo Bluetooth conectado.
      */
-    public void disconnect()
-    {
+    public void disconnect() {
         Log.d(TAG, "BlueDroid.disconnect()");
         mCurrentDevice = null;
 
-        if(isServiceAvailable())
-        {
+        if (isServiceAvailable()) {
             isServiceRunning = false;
             mBtService.stop();
-            if(mBtService.getState() == BlueService.STATE_NONE)
-            {
+            if (mBtService.getState() == BlueService.STATE_NONE) {
                 isServiceRunning = true;
                 mBtService.start(mConnectionDevice == ConnectionDevice.ANDROID,
                         mConnectionSecure == ConnectionSecure.SECURE);
@@ -384,45 +351,34 @@ public class BlueDroid
     /**
      * Obtém o estado atual da conexão.
      */
-    public int getState()
-    {
+    public int getState() {
         return mBtService.getState();
     }
 
     /**
      * Envia dados para um dispositivo Bluetooth.
      */
-    public void send(byte[] data, LineBreakType lbt)
-    {
+    public void send(byte[] data, LineBreakType lbt) {
         send(data, 0, data.length, lbt);
     }
 
     /**
      * Envia dados para um dispositivo Bluetooth.
      */
-    public void send(byte[] data, int off, int len, LineBreakType lbt)
-    {
-        if(lbt.value == LineBreakType.NONE.value)
-        {
+    public void send(byte[] data, int off, int len, LineBreakType lbt) {
+        if (lbt.value == LineBreakType.NONE.value) {
             send(data, off, len);
-        }
-        else
-        {
+        } else {
             byte[] tmp = new byte[len + 2];
             System.arraycopy(data, off, tmp, 0, len);
             tmp[tmp.length - 1] = 0x0D; // CR
             tmp[tmp.length - 2] = 0x0A; // LF
-            if(lbt.value == LineBreakType.LF.value)
-            {
+            if (lbt.value == LineBreakType.LF.value) {
                 tmp[tmp.length - 1] = 0x0A; // LF
                 send(tmp, 0, len + 1);
-            }
-            else if(lbt.value == LineBreakType.CR.value)
-            {
+            } else if (lbt.value == LineBreakType.CR.value) {
                 send(tmp, 0, len + 1);
-            }
-            else if(lbt.value == LineBreakType.CRLF.value)
-            {
+            } else if (lbt.value == LineBreakType.CRLF.value) {
                 send(tmp);
             }
         }
@@ -431,39 +387,30 @@ public class BlueDroid
     /**
      * Envia dados para um dispositivo Bluetooth.
      */
-    public void send(byte[] data, int off, int len)
-    {
+    public void send(byte[] data, int off, int len) {
         mBtService.write(data, off, len);
     }
 
     /**
      * Envia dados para um dispositivo Bluetooth.
      */
-    public void send(byte[] data)
-    {
+    public void send(byte[] data) {
         mBtService.write(data);
     }
 
     /**
      * Envia um simples byte para um dispositivo Bluetooth.
      */
-    public void send(int b)
-    {
+    public void send(int b) {
         mBtService.write(b);
     }
 
-    public void checkDiscoveryPermissionRequest(int requestCode, String permissions[], int[] grantResults)
-    {
-        switch(requestCode)
-        {
-            case REQUEST_COARSE_LOCATION_PERMISSIONS:
-            {
-                if(grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
+    public void checkDiscoveryPermissionRequest(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_COARSE_LOCATION_PERMISSIONS: {
+                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     doDiscovery(null);
-                }
-                else
-                {
+                } else {
                     fireOnDiscoveryFailed();
                 }
 
@@ -475,27 +422,23 @@ public class BlueDroid
     /**
      * Executa a descoberta de dispositivos Bluetooth.
      */
-    public void doDiscovery(Activity activity)
-    {
+    public void doDiscovery(Activity activity) {
         Log.d(TAG, "BlueDroid.doDiscovery()");
 
         final int hasPermission = ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION);
 
-        if(hasPermission != PackageManager.PERMISSION_GRANTED)
-        {
-            if(activity != null)
-            {
+        if (hasPermission != PackageManager.PERMISSION_GRANTED) {
+            if (activity != null) {
                 ActivityCompat.requestPermissions(activity,
                         new String[]{
-                                android.Manifest.permission.ACCESS_COARSE_LOCATION },
+                                android.Manifest.permission.ACCESS_COARSE_LOCATION},
                         REQUEST_COARSE_LOCATION_PERMISSIONS);
             }
 
             return;
         }
 
-        if(isDiscovering())
-        {
+        if (isDiscovering()) {
             mContext.unregisterReceiver(mReceiver);
             cancelDiscovery();
         }
@@ -507,173 +450,116 @@ public class BlueDroid
         startDiscovery();
     }
 
-    protected void fireOnDiscoveryStarted()
-    {
-        for(DiscoveryListener listener : discoveryListener) listener.onDiscoveryStarted();
+    protected void fireOnDiscoveryStarted() {
+        for (DiscoveryListener listener : discoveryListener) listener.onDiscoveryStarted();
     }
 
-    protected void fireOnDiscoveryFinished()
-    {
-        for(DiscoveryListener listener : discoveryListener) listener.onDiscoveryFinished();
+    protected void fireOnDiscoveryFinished() {
+        for (DiscoveryListener listener : discoveryListener) listener.onDiscoveryFinished();
     }
 
-    protected void fireOnNoDevicesFound()
-    {
-        for(DiscoveryListener listener : discoveryListener) listener.onNoDevicesFound();
+    protected void fireOnNoDevicesFound() {
+        for (DiscoveryListener listener : discoveryListener) listener.onNoDevicesFound();
     }
 
-    protected void fireOnDeviceFound(Device dev)
-    {
-        for(DiscoveryListener listener : discoveryListener) listener.onDeviceFound(dev);
+    protected void fireOnDeviceFound(Device dev) {
+        for (DiscoveryListener listener : discoveryListener) listener.onDeviceFound(dev);
     }
 
-    protected void fireOnDiscoveryFailed()
-    {
-        for(DiscoveryListener listener : discoveryListener) listener.onDiscoveryFailed();
+    protected void fireOnDiscoveryFailed() {
+        for (DiscoveryListener listener : discoveryListener) listener.onDiscoveryFailed();
     }
 
-    public void addDiscoveryListener(DiscoveryListener listener)
-    {
-        if(!discoveryListener.contains(listener))
-        {
+    public void addDiscoveryListener(DiscoveryListener listener) {
+        if (!discoveryListener.contains(listener)) {
             discoveryListener.add(listener);
         }
     }
 
-    public void removeDiscoveryListener(DiscoveryListener listener)
-    {
+    public void removeDiscoveryListener(DiscoveryListener listener) {
         discoveryListener.remove(listener);
     }
 
-    public void clearDiscoveryListener()
-    {
+    public void clearDiscoveryListener() {
         discoveryListener.clear();
     }
 
-    protected void fireOnDataReceived(byte data)
-    {
-        for(DataReceivedListener listener : dataReceivedListener) listener.onDataReceived(data);
+    protected void fireOnDataReceived(byte data) {
+        for (DataReceivedListener listener : dataReceivedListener) listener.onDataReceived(data);
     }
 
-    public void addDataReceivedListener(DataReceivedListener listener)
-    {
-        if(!dataReceivedListener.contains(listener))
-        {
+    public void addDataReceivedListener(DataReceivedListener listener) {
+        if (!dataReceivedListener.contains(listener)) {
             dataReceivedListener.add(listener);
         }
     }
 
-    public void removeDataReceivedListener(DataReceivedListener listener)
-    {
+    public void removeDataReceivedListener(DataReceivedListener listener) {
         dataReceivedListener.remove(listener);
     }
 
-    public void clearDataReceivedListener()
-    {
+    public void clearDataReceivedListener() {
         dataReceivedListener.clear();
     }
 
-    protected void fireOnDeviceConnecting()
-    {
-        for(ConnectionListener listener : connectionListener) listener.onDeviceConnecting();
+    protected void fireOnDeviceConnecting() {
+        for (ConnectionListener listener : connectionListener) listener.onDeviceConnecting();
     }
 
-    protected void fireOnDeviceConnected()
-    {
-        for(ConnectionListener listener : connectionListener) listener.onDeviceConnected();
+    protected void fireOnDeviceConnected() {
+        for (ConnectionListener listener : connectionListener) listener.onDeviceConnected();
     }
 
-    protected void fireOnDeviceDisconnected()
-    {
-        for(ConnectionListener listener : connectionListener) listener.onDeviceDisconnected();
+    protected void fireOnDeviceDisconnected() {
+        for (ConnectionListener listener : connectionListener) listener.onDeviceDisconnected();
     }
 
-    protected void fireOnDeviceConnectionFailed()
-    {
-        for(ConnectionListener listener : connectionListener) listener.onDeviceConnectionFailed();
+    protected void fireOnDeviceConnectionFailed() {
+        for (ConnectionListener listener : connectionListener) listener.onDeviceConnectionFailed();
     }
 
-    public void addConnectionListener(ConnectionListener listener)
-    {
-        if(!connectionListener.contains(listener))
-        {
+    public void addConnectionListener(ConnectionListener listener) {
+        if (!connectionListener.contains(listener)) {
             connectionListener.add(listener);
         }
     }
 
-    public void removeConnectionListener(ConnectionListener listener)
-    {
+    public void removeConnectionListener(ConnectionListener listener) {
         connectionListener.remove(listener);
     }
 
-    public void clearConnectionListener()
-    {
+    public void clearConnectionListener() {
         connectionListener.clear();
     }
 
-    public interface DiscoveryListener
-    {
-        void onDiscoveryStarted();
-
-        void onDiscoveryFinished();
-
-        void onNoDevicesFound();
-
-        void onDeviceFound(Device device);
-
-        void onDiscoveryFailed();
-    }
-
-    public interface DataReceivedListener
-    {
-        void onDataReceived(byte data);
-    }
-
-    public interface ConnectionListener
-    {
-        void onDeviceConnecting();
-
-        void onDeviceConnected();
-
-        void onDeviceDisconnected();
-
-        void onDeviceConnectionFailed();
-    }
-
-    private class BlueDroidAdapter extends BaseAdapter
-    {
+    private class BlueDroidAdapter extends BaseAdapter {
         @Override
-        public int getCount()
-        {
+        public int getCount() {
             return getDevices().size();
         }
 
         @Override
-        public Object getItem(int position)
-        {
+        public Object getItem(int position) {
             return getDevices().get(position);
         }
 
         @Override
-        public long getItemId(int position)
-        {
+        public long getItemId(int position) {
             return 0;
         }
 
         @Override
-        public View getView(int position, View v, ViewGroup parent)
-        {
-            if(v == null)
-            {
+        public View getView(int position, View v, ViewGroup parent) {
+            if (v == null) {
                 v = LayoutInflater.from(mContext).inflate(R.layout.device_item, parent, false);
             }
 
             Device device = getDevices().get(position);
 
             v.setTag(device);
-            ((ImageView)v.findViewById(R.id.bt_device_icon)).setImageResource(device.getDeviceClassIcon());
-            ((TextView)v.findViewById(R.id.bt_device_name)).setText(device.getName());
-            ((TextView)v.findViewById(R.id.bt_device_address)).setText(device.getAddress());
+            ((ImageView) v.findViewById(R.id.bt_device_icon)).setImageResource(device.getDeviceClassIcon());
+            ((TextView) v.findViewById(R.id.bt_device_name)).setText(device.getName());
+            ((TextView) v.findViewById(R.id.bt_device_address)).setText(device.getAddress());
 
             return v;
         }

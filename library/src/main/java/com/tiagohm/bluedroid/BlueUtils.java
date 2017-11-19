@@ -16,6 +16,5 @@
 
 package com.tiagohm.bluedroid;
 
-public class BlueUtils
-{
+public class BlueUtils {
 }

@@ -16,8 +16,7 @@
 
 package com.tiagohm.bluedroid;
 
-public enum ConnectionSecure
-{
+public enum ConnectionSecure {
     SECURE,
     INSECURE
 }

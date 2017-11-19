@@ -19,84 +19,64 @@ package com.tiagohm.bluedroid;
 import android.bluetooth.BluetoothClass;
 import android.util.Log;
 
-public class Device
-{
+public class Device {
 
     private final String mName;
     private final String mAddress;
     private final boolean isPaired;
     private final int mDeviceClass;
 
-    public Device(String name, String address, boolean paired, int deviceClass)
-    {
+    public Device(String name, String address, boolean paired, int deviceClass) {
         this.mName = name;
         this.mAddress = address;
         this.isPaired = paired;
         this.mDeviceClass = deviceClass;
     }
 
-    public String getName()
-    {
+    @Override
+    public int hashCode() {
+        return mAddress != null ? mAddress.hashCode() : super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Device && getAddress() == ((Device) o).getAddress();
+    }
+
+    public String getName() {
         return mName;
     }
 
-    public String getAddress()
-    {
+    public String getAddress() {
         return mAddress;
     }
 
-    public boolean isPaired()
-    {
+    public boolean isPaired() {
         return isPaired;
     }
 
-    public int getDeviceClass()
-    {
+    public int getDeviceClass() {
         return mDeviceClass;
     }
 
-    public int getDeviceClassIcon()
-    {
+    public int getDeviceClassIcon() {
         Log.d("TAG", "Device.getDeviceClass() = " + getDeviceClass());
 
         final int deviceClass = getDeviceClass();
         final int deviceClassMasked = deviceClass & 0x1F00;
 
-        if(deviceClass == BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES)
-        {
+        if (deviceClass == BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES) {
             return R.drawable.headphone;
-        }
-        else if(deviceClass == BluetoothClass.Device.AUDIO_VIDEO_MICROPHONE)
-        {
+        } else if (deviceClass == BluetoothClass.Device.AUDIO_VIDEO_MICROPHONE) {
             return R.drawable.microphone;
-        }
-        else if(deviceClassMasked == BluetoothClass.Device.Major.COMPUTER)
-        {
+        } else if (deviceClassMasked == BluetoothClass.Device.Major.COMPUTER) {
             return R.drawable.computer;
-        }
-        else if(deviceClassMasked == BluetoothClass.Device.Major.PHONE)
-        {
+        } else if (deviceClassMasked == BluetoothClass.Device.Major.PHONE) {
             return R.drawable.cell_phone;
-        }
-        else if(deviceClassMasked == BluetoothClass.Device.Major.HEALTH)
-        {
+        } else if (deviceClassMasked == BluetoothClass.Device.Major.HEALTH) {
             return R.drawable.heart;
-        }
-        else
-        {
+        } else {
             return R.drawable.bluetooth;
         }
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return mAddress != null ? mAddress.hashCode() : super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        return o instanceof Device && getAddress() == ((Device)o).getAddress();
     }
 }

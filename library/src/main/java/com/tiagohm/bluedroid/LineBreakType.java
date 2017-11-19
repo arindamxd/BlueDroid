@@ -16,8 +16,7 @@
 
 package com.tiagohm.bluedroid;
 
-public enum LineBreakType
-{
+public enum LineBreakType {
     NONE(0),
     WINDOWS(1),
     UNIX(2),
@@ -28,8 +27,7 @@ public enum LineBreakType
 
     public final int value;
 
-    LineBreakType(int value)
-    {
+    LineBreakType(int value) {
         this.value = value;
     }
 }
