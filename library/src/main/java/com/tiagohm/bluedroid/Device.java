@@ -34,13 +34,19 @@ public class Device {
     }
 
     @Override
-    public int hashCode() {
-        return mAddress != null ? mAddress.hashCode() : super.hashCode();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Device device = (Device) o;
+
+        return mAddress != null ? mAddress.equals(device.mAddress) : device.mAddress == null;
+
     }
 
     @Override
-    public boolean equals(Object o) {
-        return o instanceof Device && getAddress() == ((Device) o).getAddress();
+    public int hashCode() {
+        return mAddress != null ? mAddress.hashCode() : 0;
     }
 
     public String getName() {

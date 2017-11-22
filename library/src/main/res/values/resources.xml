@@ -3,4 +3,7 @@
     <item name="bt_device_icon" type="id"/>
     <item name="bt_device_name" type="id"/>
     <item name="bt_device_address" type="id"/>
+    <item name="bt_device_disconnect" type="id"/>
+    <item name="dialog_bluetooth_discovery_title" type="string"/>
+    <item name="dialog_bluetooth_discovery_scan" type="string"/>
 </resources>

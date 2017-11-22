@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">BlueDroid</string>
+    <string name="dialog_bluetooth_discovery_title">Dispositivos</string>
+    <string name="dialog_bluetooth_discovery_scan">Escanear</string>
 </resources>

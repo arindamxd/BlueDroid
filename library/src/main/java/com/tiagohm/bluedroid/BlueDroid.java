@@ -29,17 +29,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BlueDroid {
+
     public interface DiscoveryListener {
         void onDiscoveryStarted();
 
@@ -55,6 +50,7 @@ public class BlueDroid {
     public interface DataReceivedListener {
         void onDataReceived(byte data);
     }
+
     public interface ConnectionListener {
         void onDeviceConnecting();
 
@@ -64,19 +60,16 @@ public class BlueDroid {
 
         void onDeviceConnectionFailed();
     }
+
     public static final int REQUEST_COARSE_LOCATION_PERMISSIONS = 0x00BB;
     private static final String TAG = "TAG";
     private final Context mContext;
-    private final BlueDroidAdapter mAdapter = new BlueDroidAdapter();
     private final ConnectionDevice mConnectionDevice;
     private final ConnectionSecure mConnectionSecure;
     private final List<Device> mDevices = new ArrayList<>(32);
     private final List<DiscoveryListener> discoveryListener = new ArrayList<>();
     private final List<DataReceivedListener> dataReceivedListener = new ArrayList<>();
     private final List<ConnectionListener> connectionListener = new ArrayList<>();
-    private BluetoothAdapter mBtAdapter;
-    private BlueService mBtService;
-    private Device mCurrentDevice;
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -84,16 +77,14 @@ public class BlueDroid {
             String action = intent.getAction();
 
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                mCurrentDevice = null;
+                //mCurrentDevice = null;
                 mDevices.clear();
-                mAdapter.notifyDataSetChanged();
                 fireOnDiscoveryStarted();
             } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 final int deviceClass = device.getBluetoothClass().getDeviceClass();
                 Device newDevice = new Device(device.getName(), device.getAddress(), false, deviceClass);
                 mDevices.add(newDevice);
-                mAdapter.notifyDataSetChanged();
                 fireOnDeviceFound(newDevice);
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 mContext.unregisterReceiver(mReceiver);
@@ -104,6 +95,9 @@ public class BlueDroid {
             }
         }
     };
+    private BluetoothAdapter mBtAdapter;
+    private BlueService mBtService;
+    private Device mCurrentDevice;
     private boolean isServiceRunning = false;
     private boolean isConnecting = false;
     private boolean isConnected = false;
@@ -124,8 +118,8 @@ public class BlueDroid {
                 case BlueService.MESSAGE_STATE_CHANGE:
                     if (isConnected && msg.arg1 != BlueService.STATE_CONNECTED) {
                         isConnected = false;
-                        fireOnDeviceDisconnected();
                         mCurrentDevice = null;
+                        fireOnDeviceDisconnected();
                     }
                     if (!isConnecting && msg.arg1 == BlueService.STATE_CONNECTING) {
                         isConnecting = true;
@@ -133,8 +127,8 @@ public class BlueDroid {
                     } else if (isConnecting) {
                         isConnecting = false;
                         if (msg.arg1 != BlueService.STATE_CONNECTED) {
-                            fireOnDeviceConnectionFailed();
                             mCurrentDevice = null;
+                            fireOnDeviceConnectionFailed();
                         }
                     }
                     break;
@@ -150,13 +144,6 @@ public class BlueDroid {
         mConnectionDevice = device;
         mConnectionSecure = type;
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-    }
-
-    /**
-     * Obtém o adapter da lista de dispositivos Bluetooth encontrados.
-     */
-    public BaseAdapter getAdapter() {
-        return mAdapter;
     }
 
     /**
@@ -283,7 +270,24 @@ public class BlueDroid {
      * Conecta a um dispositivo Bluetooth.
      */
     public void connect(Device device) {
-        if (device != null) {
+        //Está atualmente conectado.
+        if (mCurrentDevice != null) {
+            //Conectando com o mesmo dispositivo.
+            if (mCurrentDevice.equals(device)) {
+                //Faz nada
+            }
+            //Conectando com outro dispositivo.
+            else {
+                //Desconecta e conecta com o outro dispositivo.
+                disconnect();
+                if (device != null) {
+                    mCurrentDevice = device;
+                    connect(device.getAddress());
+                }
+            }
+        }
+        //Não está conectado.
+        else if (device != null) {
             mCurrentDevice = device;
             connect(device.getAddress());
         }
@@ -530,38 +534,5 @@ public class BlueDroid {
 
     public void clearConnectionListener() {
         connectionListener.clear();
-    }
-
-    private class BlueDroidAdapter extends BaseAdapter {
-        @Override
-        public int getCount() {
-            return getDevices().size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return getDevices().get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View v, ViewGroup parent) {
-            if (v == null) {
-                v = LayoutInflater.from(mContext).inflate(R.layout.device_item, parent, false);
-            }
-
-            Device device = getDevices().get(position);
-
-            v.setTag(device);
-            ((ImageView) v.findViewById(R.id.bt_device_icon)).setImageResource(device.getDeviceClassIcon());
-            ((TextView) v.findViewById(R.id.bt_device_name)).setText(device.getName());
-            ((TextView) v.findViewById(R.id.bt_device_address)).setText(device.getAddress());
-
-            return v;
-        }
     }
 }

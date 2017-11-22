@@ -6,63 +6,32 @@
               android:orientation="vertical"
               android:padding="1dp">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical|right">
-
-        <ProgressBar
-            android:id="@+id/progress"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_centerInParent="true"
-            android:layout_marginLeft="10dp"
-            android:indeterminateOnly="true"
-            android:visibility="invisible"/>
-
-        <Button
-            android:id="@+id/scan_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:background="#0000"
-            android:text="SCAN"
-            android:textColor="#8e24aa"/>
-    </RelativeLayout>
-
-    <ListView
-        android:id="@+id/device_list_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="200dp"
-        android:paddingBottom="20dp"
-        android:paddingTop="20dp"/>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical|right"
+        android:gravity="center"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/cancel_button"
+        <ProgressBar
+            android:id="@+id/progressoDoEscaneamento"
+            style="@android:style/Widget.Holo.ProgressBar.Horizontal"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="10dp"
             android:layout_weight="1"
-            android:background="#0000"
-            android:text="CANCEL"
-            android:textColor="#8e24aa"/>
+            android:indeterminate="true"
+            android:visibility="gone"/>
 
-        <Button
-            android:id="@+id/ok_button"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:background="#0000"
-            android:text="OK"
-            android:textColor="#8e24aa"/>
+        <ImageView
+            android:id="@+id/botaoPararEscaneamento"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_margin="5dp"
+            android:visibility="gone"
+            android:src="@drawable/stop"/>
     </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/listaDeDispositivos"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 </LinearLayout>

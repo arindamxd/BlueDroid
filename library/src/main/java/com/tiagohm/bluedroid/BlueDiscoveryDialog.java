@@ -17,73 +17,109 @@
 package com.tiagohm.bluedroid;
 
 import android.app.Activity;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.content.DialogInterface;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
-import android.view.LayoutInflater;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 
-public class BlueDiscoveryDialog extends AlertDialog implements BlueDroid.ConnectionListener, BlueDroid.DiscoveryListener {
-    private final BlueDroid mBluetooth;
-    private final View mView;
-    private final Activity mActivity;
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 
-    public BlueDiscoveryDialog(@NonNull Activity activity, BlueDroid bt) {
-        super(activity, false, null);
+import br.tiagohm.easyadapter.EasyAdapter;
+import br.tiagohm.easyadapter.EasyInjector;
+import br.tiagohm.easyadapter.Injector;
 
-        mBluetooth = bt;
-        mActivity = activity;
+public class BlueDiscoveryDialog extends MaterialDialog.Builder implements BlueDroid.ConnectionListener, BlueDroid.DiscoveryListener {
 
-        getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        setView(mView = LayoutInflater.from(activity).inflate(R.layout.dialog_bluetooth_discovery, null, false));
+    private final BlueDroid blueDroid;
+    private final EasyAdapter adapter = EasyAdapter.create();
+    private final ProgressBar progressoDoEscaneamento;
+    private final ImageView botaoPararEscaneamento;
 
-        mBluetooth.addConnectionListener(this);
-        mBluetooth.addDiscoveryListener(this);
-
-        ((ListView) mView.findViewById(R.id.device_list_view)).setAdapter(bt.getAdapter());
-        ((ListView) mView.findViewById(R.id.device_list_view)).setDividerHeight(0);
-        ((ListView) mView.findViewById(R.id.device_list_view)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    public BlueDiscoveryDialog(@NonNull final Activity context, @NonNull BlueDroid bt) {
+        super(context);
+        //BlueDroid
+        blueDroid = bt;
+        blueDroid.addConnectionListener(this);
+        blueDroid.addDiscoveryListener(this);
+        //Layout do Dialog.
+        title(R.string.dialog_bluetooth_discovery_title);
+        customView(R.layout.dialog_bluetooth_discovery, true);
+        positiveText(android.R.string.ok);
+        neutralText(R.string.dialog_bluetooth_discovery_scan);
+        autoDismiss(false);
+        //Eventos
+        onNeutral(new MaterialDialog.SingleButtonCallback() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (!mBluetooth.isConnected()) {
-                    Device device = (Device) view.getTag();
-                    mBluetooth.connect(device);
-                }
+            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                blueDroid.doDiscovery(context);
+            }
+        });
+        onPositive(new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                dialog.dismiss();
+            }
+        });
+        dismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                blueDroid.cancelDiscovery();
+                blueDroid.removeDiscoveryListener(BlueDiscoveryDialog.this);
+                blueDroid.removeConnectionListener(BlueDiscoveryDialog.this);
+                dialogInterface.dismiss();
             }
         });
 
-        mView.findViewById(R.id.scan_button).setOnClickListener(new View.OnClickListener() {
+        progressoDoEscaneamento = customView.findViewById(R.id.progressoDoEscaneamento);
+
+        botaoPararEscaneamento = customView.findViewById(R.id.botaoPararEscaneamento);
+        botaoPararEscaneamento.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                mBluetooth.doDiscovery(mActivity);
+            public void onClick(View view) {
+                blueDroid.cancelDiscovery();
             }
         });
 
-        mView.findViewById(R.id.cancel_button).setOnClickListener(new View.OnClickListener() {
+        RecyclerView listaDeDispositivos = customView.findViewById(R.id.listaDeDispositivos);
+        listaDeDispositivos.setLayoutManager(new LinearLayoutManager(context));
+        //Caso esteja conectado, exibi-lo.
+        if (bt.getCurrentDevice() != null) {
+            adapter.addData(bt.getCurrentDevice());
+        }
+        //Registrar layout quando estiver vazio.
+        adapter.registerEmpty(R.layout.dialog_bluetooth_discovery_empty, null);
+        //Registrar layout para um dispositivo.
+        adapter.register(Device.class, R.layout.device_item, new EasyInjector<Device>() {
             @Override
-            public void onClick(View v) {
-                mBluetooth.cancelDiscovery();
-                dismiss();
+            public void onInject(final Device device, Injector injector) {
+                injector.text(R.id.bt_device_address, device.getAddress());
+                injector.text(R.id.bt_device_name, device.getName());
+                injector.image(R.id.bt_device_icon, device.getDeviceClassIcon());
+                injector.visibility(R.id.bt_device_disconnect,
+                        device.equals(blueDroid.getCurrentDevice()) ? View.VISIBLE : View.GONE);
+                injector.onClick(0, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (!blueDroid.isConnected()) {
+                            blueDroid.connect(device);
+                        }
+                    }
+                });
+                injector.onClick(R.id.bt_device_disconnect, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        blueDroid.disconnect();
+                    }
+                });
             }
         });
 
-        mView.findViewById(R.id.ok_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mBluetooth.cancelDiscovery();
-                dismiss();
-            }
-        });
-    }
-
-    @Override
-    public void dismiss() {
-        mBluetooth.removeDiscoveryListener(this);
-        mBluetooth.removeConnectionListener(this);
-        super.dismiss();
+        adapter.attachTo(listaDeDispositivos);
     }
 
     @Override
@@ -92,25 +128,37 @@ public class BlueDiscoveryDialog extends AlertDialog implements BlueDroid.Connec
 
     @Override
     public void onDeviceConnected() {
-        dismiss();
+        adapter.notifyDataSetChanged();
     }
 
     @Override
     public void onDeviceDisconnected() {
+        adapter.notifyDataSetChanged();
     }
 
     @Override
     public void onDeviceConnectionFailed() {
+        adapter.notifyDataSetChanged();
     }
 
     @Override
     public void onDiscoveryStarted() {
-        mView.findViewById(R.id.progress).setVisibility(View.VISIBLE);
+        //Remove tudo.
+        adapter.clear();
+        //Caso esteja conectado, exibi-lo.
+        Log.d("TAG", String.format("%s", blueDroid.getCurrentDevice()));
+        if (blueDroid.getCurrentDevice() != null) {
+            adapter.addData(blueDroid.getCurrentDevice());
+        }
+        //Exibe a barra de status do progresso.
+        progressoDoEscaneamento.setVisibility(View.VISIBLE);
+        botaoPararEscaneamento.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onDiscoveryFinished() {
-        mView.findViewById(R.id.progress).setVisibility(View.INVISIBLE);
+        progressoDoEscaneamento.setVisibility(View.INVISIBLE);
+        botaoPararEscaneamento.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -118,7 +166,8 @@ public class BlueDiscoveryDialog extends AlertDialog implements BlueDroid.Connec
     }
 
     @Override
-    public void onDeviceFound(Device device) {
+    public void onDeviceFound(final Device device) {
+        adapter.addData(device);
     }
 
     @Override
