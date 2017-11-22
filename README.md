@@ -2,7 +2,7 @@
 
 [![](https://jitpack.io/v/tiagohm/BlueDroid.svg)](https://jitpack.io/#tiagohm/BlueDroid)
 
-* API +10
+* API +16
 * Suporte ao Android 6
 
 ## USO
@@ -18,7 +18,7 @@ Adicione ao seu projeto:
 ```
 ```gradle
 	dependencies {
-	        compile 'com.github.tiagohm:BlueDroid:0.1.3'
+	        compile 'com.github.tiagohm:BlueDroid:VERSION'
 	}
 ```
 
