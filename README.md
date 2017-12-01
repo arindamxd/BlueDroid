@@ -168,6 +168,14 @@ bt.addConnectionListener(new BlueDroid.ConnectionListener()
     }
 });
 ```
+
+## Customizar Texto do Dialog
+`string.xml`
+```xml
+<string name="dialog_bluetooth_discovery_title">Dispositivos</string>
+<string name="dialog_bluetooth_discovery_scan">Escanear</string>
+```
+
 ## Ícones Utilizados
 
 [Icons8](https://icons8.com/)
