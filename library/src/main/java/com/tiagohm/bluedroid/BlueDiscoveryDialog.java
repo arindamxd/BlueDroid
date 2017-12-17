@@ -157,8 +157,8 @@ public class BlueDiscoveryDialog extends MaterialDialog.Builder implements BlueD
 
     @Override
     public void onDiscoveryFinished() {
-        progressoDoEscaneamento.setVisibility(View.INVISIBLE);
-        botaoPararEscaneamento.setVisibility(View.INVISIBLE);
+        progressoDoEscaneamento.setVisibility(View.GONE);
+        botaoPararEscaneamento.setVisibility(View.GONE);
     }
 
     @Override

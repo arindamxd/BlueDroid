@@ -24,6 +24,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    implementation 'com.afollestad.material-dialogs:core:0.9.5.0'
-    implementation 'com.github.tiagohm:EasyAdapter:0.3.3'
+    compile 'com.afollestad.material-dialogs:core:0.9.5.0'
+    compile 'com.github.tiagohm:EasyAdapter:0.3.3'
+    compile 'me.zhanghai.android.materialprogressbar:library:1.4.2'
 }
