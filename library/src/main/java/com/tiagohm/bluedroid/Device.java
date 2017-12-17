@@ -19,7 +19,9 @@ package com.tiagohm.bluedroid;
 import android.bluetooth.BluetoothClass;
 import android.util.Log;
 
-public class Device {
+import java.io.Serializable;
+
+public class Device implements Serializable {
 
     private final String mName;
     private final String mAddress;
